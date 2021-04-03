@@ -46,8 +46,8 @@ int stateTable[][9] = {
 	/* INTEGER STATE */ {INTEGER, INTEGER, REAL, REJECT, REJECT, REJECT, REJECT, REJECT, REJECT},
 	/* REAL STATE */ {REAL, REAL, UNKNOWN, REJECT, REJECT, REJECT, REJECT, REJECT, REJECT},
 	/* SEPERATOR STATE */ {SEPERATOR, REJECT, REJECT, REJECT, REJECT, REJECT, REJECT, REJECT, REJECT},
-	/* OPERATOR STATE */ {OPERATOR, REJECT, REJECT, REJECT, OPERATOR, STRING, REJECT, REJECT, REJECT},
-	/* STRING STATE */ {STRING, STRING, STRING, REJECT, STRING, STRING, STRING, STRING, REJECT},
+	/* OPERATOR STATE */ {OPERATOR, REJECT, REJECT, REJECT, OPERATOR, REJECT, REJECT, REJECT, REJECT},
+	/* STRING STATE */ {STRING, STRING, STRING, REJECT, REJECT, STRING, STRING, STRING, REJECT},
 	/* IGNORE STATE */ {IGNORE, IGNORE, IGNORE, IGNORE, IGNORE, IGNORE, REJECT, IGNORE, IGNORE},
 	/* UNKNOWN STATE */ {UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN},
 	/* REJECT STATE */ {SPACE, REJECT, REJECT, REJECT, REJECT, REJECT, REJECT, REJECT, REJECT}};
@@ -78,55 +78,55 @@ vector<Token> lexer(string expression);
 int getCharState(char currentChar, char prevState);
 string getLexemeName(int lexemeNum, string token);
 
-int main()
-{
-	// Declare variables for reading file
-	ifstream infile;
-	string fileName = "";
-	string line = "";
+// int main()
+// {
+// 	// Declare variables for reading file
+// 	ifstream infile;
+// 	string fileName = "";
+// 	string line = "";
 
-	// A vector hold the tokens
-	vector<Token> tokens;
+// 	// A vector hold the tokens
+// 	vector<Token> tokens;
 
-	// Read the file
-	cout << "\nPlease enter the name of the file: ";
-	getline(cin, fileName);
+// 	// Read the file
+// 	cout << "\nPlease enter the name of the file: ";
+// 	getline(cin, fileName);
 
-	// Open the file
-	infile.open(fileName.c_str());
+// 	// Open the file
+// 	infile.open(fileName.c_str());
 
-	// Error shooting if the file cannot be opened
-	if (infile.fail())
-	{
-		cout << "\n** ERROR - the file \"" << fileName << "\" cannot be found!\n\n";
-		exit(1);
-	}
+// 	// Error shooting if the file cannot be opened
+// 	if (infile.fail())
+// 	{
+// 		cout << "\n** ERROR - the file \"" << fileName << "\" cannot be found!\n\n";
+// 		exit(1);
+// 	}
 
-  cout << "TOKENS                  LEXEMES" << endl << endl;
+//   cout << "TOKENS                  LEXEMES" << endl << endl;
 
-	// Get each line in the text file
-	while (getline(infile, line))
-	{
-		tokens = lexer(line);
+// 	// Get each line in the text file
+// 	while (getline(infile, line))
+// 	{
+// 		tokens = lexer(line);
 
-		// Display the tokens to the screen
-		for (unsigned x = 0; x < tokens.size(); ++x)
-		{
-			// Don't print out the comment
-			if (tokens[x].lexemeNum != IGNORE)
-			{
-			cout << tokens[x].lexemeName << "  \t"
-				 << tokens[x].token << endl;
-			}
-		}
-	}
+// 		// Display the tokens to the screen
+// 		for (unsigned x = 0; x < tokens.size(); ++x)
+// 		{
+// 			// Don't print out the comment
+// 			if (tokens[x].lexemeNum != IGNORE)
+// 			{
+// 			cout << tokens[x].lexemeName << "  \t"
+// 				 << tokens[x].token << endl;
+// 			}
+// 		}
+// 	}
 
-	// Close the file
-	infile.close();
-	infile.clear();
+// 	// Close the file
+// 	infile.close();
+// 	infile.clear();
 
-	return 0;
-}
+// 	return 0;
+// }
 
 /**
 *	FUNCTION: lexer
@@ -189,7 +189,7 @@ vector<Token> lexer(string expression)
 	return tokens;
 } // end of Lexer
 
-/*
+/**
 * FUNCTION: getCharState
 * USE: get the corresponding state based on the current character
 * @param currentChar - the current char
@@ -242,7 +242,7 @@ int getCharState(char currentChar, char prevState)
 	return UNKNOWN;
 }
 
-/*
+/**
 * FUNCTION: getLexemeName
 * USE: takes a number and return the corresponding string to the token type.
 * @param lexemeNum - integer that corresponds to the state
