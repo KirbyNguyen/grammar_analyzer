@@ -78,56 +78,6 @@ vector<Token> lexer(string expression);
 int getCharState(char currentChar, char prevState);
 string getLexemeName(int lexemeNum, string token);
 
-// int main()
-// {
-// 	// Declare variables for reading file
-// 	ifstream infile;
-// 	string fileName = "";
-// 	string line = "";
-
-// 	// A vector hold the tokens
-// 	vector<Token> tokens;
-
-// 	// Read the file
-// 	cout << "\nPlease enter the name of the file: ";
-// 	getline(cin, fileName);
-
-// 	// Open the file
-// 	infile.open(fileName.c_str());
-
-// 	// Error shooting if the file cannot be opened
-// 	if (infile.fail())
-// 	{
-// 		cout << "\n** ERROR - the file \"" << fileName << "\" cannot be found!\n\n";
-// 		exit(1);
-// 	}
-
-//   cout << "TOKENS                  LEXEMES" << endl << endl;
-
-// 	// Get each line in the text file
-// 	while (getline(infile, line))
-// 	{
-// 		tokens = lexer(line);
-
-// 		// Display the tokens to the screen
-// 		for (unsigned x = 0; x < tokens.size(); ++x)
-// 		{
-// 			// Don't print out the comment
-// 			if (tokens[x].lexemeNum != IGNORE)
-// 			{
-// 			cout << tokens[x].lexemeName << "  \t"
-// 				 << tokens[x].token << endl;
-// 			}
-// 		}
-// 	}
-
-// 	// Close the file
-// 	infile.close();
-// 	infile.clear();
-
-// 	return 0;
-// }
-
 /**
 *	FUNCTION: lexer
 *	USE: go through the string to return a list of tokens.
@@ -253,31 +203,31 @@ string getLexemeName(int lexemeNum, string token)
 	switch (lexemeNum)
 	{
 	case INTEGER:
-		return "INTEGER         =    ";
+		return "INTEGER";
 		break;
 	case REAL:
-		return "REAL            =    ";
+		return "REAL";
 		break;
 	case SEPERATOR:
-		return "SEPERATOR       =    ";
+		return "SEPERATOR";
 		break;
 	case OPERATOR:
-		return "OPERATOR        =   ";
+		return "OPERATOR";
 		break;
 	case STRING:
-		return (KEYWORDS.find(token) != KEYWORDS.end() ? "KEYWORD         =    " : "IDENTIFER       =    ");
+		return (KEYWORDS.find(token) != KEYWORDS.end() ? "KEYWORD" : "IDENTIFER");
 		break;
 	case IGNORE:
-		return "COMMENT         =   ";
+		return "COMMENT";
 		break;
 	case UNKNOWN:
-		return "UNKNOWN         =   ";
+		return "UNKNOWN";
 		break;
 	case SPACE:
-		return "SPACE           =   ";
+		return "SPACE";
 		break;
 	default:
-		return "ERROR           =   ";
+		return "ERROR";
 		break;
 	};
 };
