@@ -11,23 +11,23 @@
 using namespace std;
 
 /** BASED ON PAGE 103 - 106 IN THE BOOK
-    Expression  = E
-    Expression_ = Q
-    Term        = T
-    Term_       = R
-    Factor      = F
+    Expression      = E
+    ExpressionPrime = Q
+    Term            = T
+    TermPrime       = R
+    Factor          = F
     ============================
-    isExpression    = function E
-    isExpression_   = function Q
-    isTerm          = function T
-    isTerm_         = function R
-    isFactor        = function F
+    isExpression        = function E
+    isExpressionPrime   = function Q
+    isTerm              = function T
+    isTermPrime         = function R
+    isFactor            = function F
 **/
 
 bool isExpression(Token);
-bool isExpression_(Token);
+bool isExpressionPrime(Token);
 bool isTerm(Token);
-bool isTerm_(Token);
+bool isTermPrime(Token);
 bool isFactor(Token);
 void backup(vector<Token>);
 
@@ -107,9 +107,9 @@ bool isExpression(Token lexeme)
     bool expression = false;
     if (isTerm(lexeme))
     {
-        if (isExpression_(lexeme))
+        if (isExpressionPrime(lexeme))
         {
-            cout << "<Expression> -> <Term><Expression_>\n";
+            cout << "<Expression> -> <Term><ExpressionPrime>\n";
             expression = true;
         }
     }
@@ -118,28 +118,28 @@ bool isExpression(Token lexeme)
 }
 
 // Expression_ is Q in the book
-bool isExpression_(Token lexeme)
+bool isExpressionPrime(Token lexeme)
 {
-    bool expression_ = false;
+    bool expressionPrime = false;
     char cc = lexeme.token[0];
     if (cc == '+' || cc == '-')
     {
         if (isTerm(lexeme))
         {
-            if (isExpression_(lexeme))
+            if (isExpressionPrime(lexeme))
             {
-                cout << "<Expression_> -> " << cc << " <Term><Expression_>\n";
-                expression_ = true;
+                cout << "<ExpressionPrime> -> " << cc << " <Term><ExpressionPrime>\n";
+                expressionPrime = true;
             }
         }
     }
     else if (cc == ')' || cc == '$')
     {
         backup();
-        cout << "<Expression_> -> eps";
-        expression_ = true;
+        cout << "<ExpressionPrime> -> eps";
+        expressionPrime = true;
     }
-    return expression_;
+    return expressionPrime;
 }
 
 // Term is T in the book
@@ -148,9 +148,9 @@ bool isTerm(Token lexeme)
     bool term = false;
     if (isFactor(lexeme))
     {
-        if (isTerm_(lexeme))
+        if (isTermPrime(lexeme))
         {
-            cout << "<Term> -> <Factor><Term_>\n";
+            cout << "<Term> -> <Factor><TermPrime>\n";
             term = true;
         }
     }
@@ -159,18 +159,18 @@ bool isTerm(Token lexeme)
 }
 
 // Term_ is R in the book
-bool isTerm_(Token lexeme)
+bool isTermPrime(Token lexeme)
 {
-    bool term_ = false;
+    bool termPrime = false;
     char cc = lexeme.token[0];
     if (cc == '*' || cc == '/')
     {
         if (isFactor(lexeme))
         {
-            if (isTerm_(lexeme))
+            if (isTermPrime(lexeme))
             {
-                cout << "<Term_> -> " << cc << " <Factor><Term_>\n";
-                term_ = true;
+                cout << "<TermPrime> -> " << cc << " <Factor><TermPrime>\n";
+                termPrime = true;
             }
         }
     }
@@ -178,9 +178,9 @@ bool isTerm_(Token lexeme)
     {
         cout << "<Term_> -> eps";
         backup();
-        term_ = true;
+        termPrime = true;
     }
-    return term_;
+    return termPrime;
 }
 
 // Factor is F in the book
