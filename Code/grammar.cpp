@@ -40,10 +40,10 @@ int main()
     string fileName = "";
     string line = "";
 
-    Token moneySign;
-    moneySign.lexemeNum = 4;
-    moneySign.token = '$';
-    moneySign.lexemeName = "SEPERATOR";
+    // Token moneySign;
+    // moneySign.lexemeNum = 4;
+    // moneySign.token = '$';
+    // moneySign.lexemeName = "SEPERATOR";
 
     // A vector to hold the tokens
     vector<Token> tokens;
@@ -71,14 +71,14 @@ int main()
         tokens.insert(tokens.end(), temp.begin(), temp.end());
     }
 
-    tokens.push_back(moneySign);
+    // tokens.push_back(moneySign);
 
     // Parse the tree
     while (token_ptr < tokens.size())
     {
         while (tokens[token_ptr].lexemeNum == 6) {token_ptr++;};
 
-        cout << "Token: " << tokens[token_ptr].lexemeName << "\t\t Lexeme: " << tokens[token_ptr].token << endl;
+        cout << "Token: " << tokens[token_ptr].lexemeName << "\t\t Lexeme: " << tokens[token_ptr].lexeme << endl;
         if (isExpression(tokens[token_ptr])) {
             cout << "Success.\n";
         } else {
@@ -102,12 +102,12 @@ void backup()
 };
 
 // Expression is E in the book
-bool isExpression(Token lexeme)
+bool isExpression(Token token)
 {
     bool expression = false;
-    if (isTerm(lexeme))
+    if (isTerm(token))
     {
-        if (isExpressionPrime(lexeme))
+        if (isExpressionPrime(token))
         {
             cout << "<Expression> -> <Term><ExpressionPrime>\n";
             expression = true;
@@ -118,15 +118,15 @@ bool isExpression(Token lexeme)
 }
 
 // Expression_ is Q in the book
-bool isExpressionPrime(Token lexeme)
+bool isExpressionPrime(Token token)
 {
     bool expressionPrime = false;
-    char cc = lexeme.token[0];
+    char cc = token.lexeme[0];
     if (cc == '+' || cc == '-')
     {
-        if (isTerm(lexeme))
+        if (isTerm(token))
         {
-            if (isExpressionPrime(lexeme))
+            if (isExpressionPrime(token))
             {
                 cout << "<ExpressionPrime> -> " << cc << " <Term><ExpressionPrime>\n";
                 expressionPrime = true;
@@ -143,12 +143,12 @@ bool isExpressionPrime(Token lexeme)
 }
 
 // Term is T in the book
-bool isTerm(Token lexeme)
+bool isTerm(Token token)
 {
     bool term = false;
-    if (isFactor(lexeme))
+    if (isFactor(token))
     {
-        if (isTermPrime(lexeme))
+        if (isTermPrime(token))
         {
             cout << "<Term> -> <Factor><TermPrime>\n";
             term = true;
@@ -159,15 +159,15 @@ bool isTerm(Token lexeme)
 }
 
 // Term_ is R in the book
-bool isTermPrime(Token lexeme)
+bool isTermPrime(Token token)
 {
     bool termPrime = false;
-    char cc = lexeme.token[0];
+    char cc = token.lexeme[0];
     if (cc == '*' || cc == '/')
     {
-        if (isFactor(lexeme))
+        if (isFactor(token))
         {
-            if (isTermPrime(lexeme))
+            if (isTermPrime(token))
             {
                 cout << "<TermPrime> -> " << cc << " <Factor><TermPrime>\n";
                 termPrime = true;
@@ -184,13 +184,20 @@ bool isTermPrime(Token lexeme)
 }
 
 // Factor is F in the book
-bool isFactor(Token lexeme)
+bool isFactor(Token token)
 {
     bool factor = false;
-    char cc = lexeme.token[0];
+
+    char cc = token.lexeme[0];
+    
     if (isalpha(cc))
     {
-        cout << "<Factor> -> id\n";
+        cout << "<Factor> -> <Identifier>\n";
+        factor = true;
+    }
+    else if (isdigit(cc))
+    {
+        cout << "<Factor> -> num\n";
         factor = true;
     }
     else if (cc == ')')

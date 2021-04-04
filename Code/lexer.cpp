@@ -58,7 +58,7 @@ int stateTable[][9] = {
 struct Token
 {
 	int lexemeNum;
-	string token;
+	string lexeme;
 	string lexemeName;
 };
 
@@ -113,9 +113,9 @@ vector<Token> lexer(string expression)
 		{
 			if (prevState != SPACE) // we dont care about whitespace
 			{
-				access.token = currentToken;
+				access.lexeme = currentToken;
 				access.lexemeNum = prevState;
-				access.lexemeName = getLexemeName(access.lexemeNum, access.token);
+				access.lexemeName = getLexemeName(access.lexemeNum, access.lexeme);
 				tokens.push_back(access);
 			}
 			currentToken = "";
@@ -131,9 +131,9 @@ vector<Token> lexer(string expression)
 	// Include the last character
 	if (currentState != SPACE && currentToken != "")
 	{
-		access.token = currentToken;
+		access.lexeme = currentToken;
 		access.lexemeNum = currentState;
-		access.lexemeName = getLexemeName(access.lexemeNum, access.token);
+		access.lexemeName = getLexemeName(access.lexemeNum, access.lexeme);
 		tokens.push_back(access);
 	}
 	return tokens;
