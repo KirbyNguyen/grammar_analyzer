@@ -24,11 +24,18 @@ using namespace std;
     isFactor            = function F
 **/
 
-bool isExpression(Token);
-bool isExpressionPrime(Token);
-bool isTerm(Token);
-bool isTermPrime(Token);
-bool isFactor(Token);
+// bool isExpression(Token);
+// bool isExpressionPrime(Token);
+// bool isTerm(Token);
+// bool isTermPrime(Token);
+// bool isFactor(Token);
+// void backup(vector<Token>);
+
+void isExpression(Token);
+void isExpressionPrime(Token);
+void isTerm(Token);
+void isTermPrime(Token);
+void isFactor(Token);
 void backup(vector<Token>);
 
 int token_ptr;
@@ -76,14 +83,21 @@ int main()
     // Parse the tree
     while (token_ptr < tokens.size())
     {
-        while (tokens[token_ptr].lexemeNum == 6) {token_ptr++;};
+        while (tokens[token_ptr].lexemeNum == 6)
+        {
+            token_ptr++;
+        };
 
         cout << "Token: " << tokens[token_ptr].lexemeName << "\t\t Lexeme: " << tokens[token_ptr].lexeme << endl;
-        if (isExpression(tokens[token_ptr])) {
-            cout << "Success.\n";
-        } else {
-            cout << "Failures.\n";
-        }
+        // if (isExpression(tokens[token_ptr]))
+        // {
+        //     cout << "Success.\n";
+        // }
+        // else
+        // {
+        //     cout << "Failures.\n";
+        // }
+        isExpression(tokens[token_ptr]);
 
         token_ptr++;
         cout << endl;
@@ -102,108 +116,147 @@ void backup()
 };
 
 // Expression is E in the book
-bool isExpression(Token token)
+void isExpression(Token token)
 {
-    bool expression = false;
-    if (isTerm(token))
-    {
-        if (isExpressionPrime(token))
-        {
-            cout << "<Expression> -> <Term><ExpressionPrime>\n";
-            expression = true;
-        }
-    }
+    // bool expression = false;
+    // if (isTerm(token))
+    // {
+    //     if (isExpressionPrime(token))
+    //     {
+    //         cout << "<Expression> -> <Term><ExpressionPrime>\n";
+    //         expression = true;
+    //     }
+    // }
+    // return expression;
 
-    return expression;
+    if (token.lexemeName.compare("IDENTIFER") == 0 || token.lexemeName.compare("(") == 0)
+    {
+        cout << "<Expression> -> <Term> <ExpressionPrime>\n";
+        isTerm(token);
+        isExpressionPrime(token);
+    }
+    else
+    {
+        cout << "Token in First of (E) expected\n";
+    }
 }
 
 // Expression_ is Q in the book
-bool isExpressionPrime(Token token)
+void isExpressionPrime(Token token)
 {
-    bool expressionPrime = false;
-    char cc = token.lexeme[0];
-    if (cc == '+' || cc == '-')
+    // bool expressionPrime = false;
+    // char cc = token.lexeme[0];
+    // if (cc == '+' || cc == '-')
+    // {
+    //     if (isTerm(token))
+    //     {
+    //         if (isExpressionPrime(token))
+    //         {
+    //             cout << "<ExpressionPrime> -> " << cc << " <Term><ExpressionPrime>\n";
+    //             expressionPrime = true;
+    //         }
+    //     }
+    // }
+    // else if (cc == ')' || cc == '$')
+    // {
+    //     backup();
+    //     cout << "<ExpressionPrime> -> eps";
+    //     expressionPrime = true;
+    // }
+    // return expressionPrime;
+
+    if (token.lexeme.compare("+") == 0 && token.lexeme.compare("-"))
     {
-        if (isTerm(token))
-        {
-            if (isExpressionPrime(token))
-            {
-                cout << "<ExpressionPrime> -> " << cc << " <Term><ExpressionPrime>\n";
-                expressionPrime = true;
-            }
-        }
+        cout << "<ExpressionPrime> -> + <Term> <ExpressionPrime> | - <Term> <ExpressionPrime> | eps\n";
+        isTerm(token);
+        isExpressionPrime(token);
     }
-    else if (cc == ')' || cc == '$')
+    else if (token.lexeme.compare("$") != 0 || token.lexeme.compare(")") != 0)
     {
-        backup();
-        cout << "<ExpressionPrime> -> eps";
-        expressionPrime = true;
+        cout << "Token in Follow of (E') expected\n";
     }
-    return expressionPrime;
 }
 
 // Term is T in the book
-bool isTerm(Token token)
+void isTerm(Token token)
 {
-    bool term = false;
-    if (isFactor(token))
+    // bool term = false;
+    // if (isFactor(token))
+    // {
+    //     if (isTermPrime(token))
+    //     {
+    //         cout << "<Term> -> <Factor><TermPrime>\n";
+    //         term = true;
+    //     }
+    // }
+    // return term;
+    if (token.lexemeName.compare("IDENTIFER") == 0 || token.lexemeName.compare("(") == 0)
     {
-        if (isTermPrime(token))
-        {
-            cout << "<Term> -> <Factor><TermPrime>\n";
-            term = true;
-        }
+        cout << "<Term> -> <Factor> <TermPrime>\n";
+        isFactor(token);
+        isTermPrime(token);
     }
-
-    return term;
+    else
+    {
+        cout << "Token in First of (T) expected\n";
+    }
 }
 
 // Term_ is R in the book
-bool isTermPrime(Token token)
+void isTermPrime(Token token)
 {
-    bool termPrime = false;
-    char cc = token.lexeme[0];
-    if (cc == '*' || cc == '/')
+    // bool termPrime = false;
+    // char cc = token.lexeme[0];
+    // if (cc == '*' || cc == '/')
+    // {
+    //     if (isFactor(token))
+    //     {
+    //         if (isTermPrime(token))
+    //         {
+    //             cout << "<TermPrime> -> " << cc << " <Factor><TermPrime>\n";
+    //             termPrime = true;
+    //         }
+    //     }
+    // }
+    // else if (cc == ')' || cc == '$' || cc == '+' || cc == '-')
+    // {
+    //     cout << "<Term_> -> eps";
+    //     backup();
+    //     termPrime = true;
+    // }
+    // return termPrime;
+        if (token.lexeme.compare("*") == 0 && token.lexeme.compare("/"))
     {
-        if (isFactor(token))
-        {
-            if (isTermPrime(token))
-            {
-                cout << "<TermPrime> -> " << cc << " <Factor><TermPrime>\n";
-                termPrime = true;
-            }
-        }
+        cout << "<TermPrime> -> * <Factor> <TermPrime> | - <Factor> <TermPrime> | eps\n";
+        isTerm(token);
+        isExpressionPrime(token);
     }
-    else if (cc == ')' || cc == '$' || cc == '+' || cc == '-')
+    else if (token.lexeme.compare("$") != 0 || token.lexeme.compare(")") != 0)
     {
-        cout << "<Term_> -> eps";
-        backup();
-        termPrime = true;
+        cout << "Token in Follow of (T') expected\n";
     }
-    return termPrime;
 }
 
 // Factor is F in the book
-bool isFactor(Token token)
-{
-    bool factor = false;
+void isFactor(Token token){
+    // bool factor = false;
 
     char cc = token.lexeme[0];
-    
+
     if (isalpha(cc))
     {
         cout << "<Factor> -> <Identifier>\n";
-        factor = true;
+        // factor = true;
     }
     else if (isdigit(cc))
     {
         cout << "<Factor> -> num\n";
-        factor = true;
+        // factor = true;
     }
     else if (cc == ')')
     {
         cout << "<Factor> -> ( <Expression> )\n";
-        factor = true;
+        // factor = true;
     }
-    return factor;
+    // return factor;
 };
