@@ -1,0 +1,8 @@
+<Statement> -> <Assign> | <Declarative> 
+<Assign> -> <ID> = <Expression>
+<Declreative> -> <Type> <ID>
+<Expression> -> + <Term> <Exrpression> | - <Term> <Expression> | <Term>
+<Term> -> * <Factor> <Term> | / <Factor> <Term> | <Factor>
+<Factor> -> ( <Expression> ) | <ID> | <Num>
+<ID> -> id
+<Type> -> bool | float | int
