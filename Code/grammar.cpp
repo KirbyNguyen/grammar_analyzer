@@ -171,7 +171,7 @@ bool checkExpression()
             {
                 cout << "<Expression> -> <Term> <ExpressionPrime>" << endl;
                 isExpression = true;
-            };
+            }
         }
     } else {
         cout << "Token in First(<Expression>) expected" << endl;
@@ -220,7 +220,7 @@ bool checkExpressionPrime()
     }
     else if (token.lexeme == "$" || token.lexeme == ")")
     {
-        // backup();
+        backup();
         cout << "<ExpressionPrime> -> Epsilon" << endl;
         isExpressionPrime = true;
     }
@@ -253,10 +253,6 @@ bool checkTermPrime()
         cout << "<TermPrime> -> Epsilon" << endl;
         backup();
         isTermPrime = true;
-    }
-    else
-    {
-        cout << "Token in First(<TermPrime>) expected" << endl;
     }
 
     return isTermPrime;

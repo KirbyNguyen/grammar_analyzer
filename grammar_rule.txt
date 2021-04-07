@@ -4,7 +4,7 @@
 <Expression> -> <Term> <ExpressionPrime>
 <ExpressionPrime> -> + <Term> <ExpressionPrime> | - <Term> <ExpressionPrime> | Epsilon
 <Term> -> <Factor> <TermPrime>
-<TermPrime> -> * <Factor> <TermPrime> | / <Factor> <TermPrime> | Epislon
+<TermPrime> -> * <Factor> <TermPrime> | / <Factor> <TermPrime> | Epsilon
 <Factor> -> ( <Expression> ) | <ID> | num
 <ID> -> id
 <Type> -> bool | float | int
