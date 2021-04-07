@@ -7,6 +7,9 @@
         "ostream": "cpp",
         "xstring": "cpp",
         "iterator": "cpp",
-        "limits": "cpp"
+        "limits": "cpp",
+        "xlocale": "cpp",
+        "iomanip": "cpp",
+        "ios": "cpp"
     }
 }

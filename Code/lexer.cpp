@@ -36,7 +36,9 @@ enum TOKEN_TYPES
 	STRING,
 	IGNORE,
 	UNKNOWN,
-	SPACE
+	SPACE,
+	KEYWORD,
+	IDENTIFIER
 };
 
 // State table for transvering through the lexeme
@@ -116,6 +118,13 @@ vector<Token> lexer(string expression)
 				access.lexeme = currentToken;
 				access.lexemeNum = prevState;
 				access.lexemeName = getLexemeName(access.lexemeNum, access.lexeme);
+
+				// Extra step for the KEYWORD and IDENTIFIER
+				if (access.lexemeName.compare("KEYWORD") == 0)
+					access.lexemeNum = KEYWORD;
+				else if (access.lexemeName.compare("IDENTIFIER") == 0)
+					access.lexemeNum = IDENTIFIER;
+
 				tokens.push_back(access);
 			}
 			currentToken = "";
@@ -134,6 +143,13 @@ vector<Token> lexer(string expression)
 		access.lexeme = currentToken;
 		access.lexemeNum = currentState;
 		access.lexemeName = getLexemeName(access.lexemeNum, access.lexeme);
+
+		// Extra step for the KEYWORD and IDENTIFIER
+		if (access.lexemeName.compare("KEYWORD") == 0)
+			access.lexemeNum = KEYWORD;
+		else if (access.lexemeName.compare("IDENTIFIER") == 0)
+			access.lexemeNum = IDENTIFIER;
+
 		tokens.push_back(access);
 	}
 	return tokens;
@@ -198,7 +214,7 @@ int getCharState(char currentChar, char prevState)
 * @param lexemeNum - integer that corresponds to the state
 * @return - a string of the state
 */
-string getLexemeName(int lexemeNum, string token)
+string getLexemeName(int lexemeNum, string lexeme)
 {
 	switch (lexemeNum)
 	{
@@ -215,7 +231,7 @@ string getLexemeName(int lexemeNum, string token)
 		return "OPERATOR";
 		break;
 	case STRING:
-		return (KEYWORDS.find(token) != KEYWORDS.end() ? "KEYWORD" : "IDENTIFER");
+		return (KEYWORDS.find(lexeme) != KEYWORDS.end() ? "KEYWORD" : "IDENTIFIER");
 		break;
 	case IGNORE:
 		return "COMMENT";

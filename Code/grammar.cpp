@@ -5,45 +5,35 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <iomanip>
 
 #include "lexer.cpp"
-#include "stringFunctions.cpp"
 
 using namespace std;
 
-/** BASED ON PAGE 103 - 106 IN THE BOOK
-    Expression      = E
-    ExpressionPrime = Q
-    Term            = T
-    TermPrime       = R
-    Factor          = F
-    ============================
-    isExpression        = function E
-    isExpressionPrime   = function Q
-    isTerm              = function T
-    isTermPrime         = function R
-    isFactor            = function F
-**/
+bool checkStatement();
+bool checkAssign();
+bool checkDeclarative();
 
-// bool isExpression(Token);
-// bool isExpressionPrime(Token);
-// bool isTerm(Token);
-// bool isTermPrime(Token);
-// bool isFactor(Token);
-// void backup(vector<Token>);
+bool checkExpression();
+bool checkExpressionPrime();
+bool checkTerm();
+bool checkTermPrime();
+bool checkFactor();
 
-bool isExpression(vector<Token>);
-bool isExpressionPrime(vector<Token>);
-bool isTerm(vector<Token>);
-bool isTermPrime(vector<Token>);
-bool isFactor(vector<Token>);
+bool checkIdentifier();
+bool checkType();
 
-void backup();
+// Acknowledge if this is a statement or not
+// DEFAULT: false
+bool duringStatement = false;
 
 // A vector to hold the tokens
 vector<Token> tokens;
+// Token token;
 int token_ptr;
 
+// Auxiliry functions
 void moveup()
 {
     if (token_ptr < tokens.size())
@@ -60,6 +50,19 @@ void backup()
     }
 };
 
+// Check if a string is numeric
+bool isNumeric(string &s)
+{
+    for (int i = 0; i < s.size(); i++)
+    {
+        if (!isdigit(s[i]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 int main()
 {
     // Declare variables for reading file
@@ -67,10 +70,11 @@ int main()
     string fileName = "";
     string line = "";
 
-    // Token moneySign;
-    // moneySign.lexemeNum = 4;
-    // moneySign.token = '$';
-    // moneySign.lexemeName = "SEPERATOR";
+    // Money sign to mark the end of the file
+    Token moneySign;
+    moneySign.lexemeNum = 4;
+    moneySign.lexeme = '$';
+    moneySign.lexemeName = "SEPERATOR";
 
     // Read the file
     cout << "\nPlease enter the name of the file: ";
@@ -95,7 +99,7 @@ int main()
         tokens.insert(tokens.end(), temp.begin(), temp.end());
     }
 
-    // tokens.push_back(moneySign);
+    tokens.push_back(moneySign);
 
     // Parse the tree
     while (token_ptr < tokens.size())
@@ -106,17 +110,18 @@ int main()
             token_ptr++;
         };
 
-        cout << "Token: " << tokens[token_ptr].lexemeName << "\t\t Lexeme: " << tokens[token_ptr].lexeme << endl;
+        // Display the token
+        cout << left << setw(5) << "Token: " << setw(15) << tokens[token_ptr].lexemeName
+             << setw(5) << "Lexeme: " << tokens[token_ptr].lexeme << endl;
 
-        if (isExpression(tokens))
+        if (checkExpression())
         {
-            cout << "Success!\n";
         }
         else
         {
-            cout << "Failure!\n";
-        }
+        };
 
+        // Move to the next token
         token_ptr++;
         cout << endl;
     }
@@ -128,102 +133,176 @@ int main()
     return 0;
 }
 
-bool isExpression(vector<Token> tokens)
+// Check if the following sentence is a statement
+bool checkStatement()
 {
-    bool expression = false;
+    bool isStatement = false;
 
-    if (isTerm(tokens))
-    {
-        if (isExpressionPrime(tokens))
-        {
-            expression = true;
-            cout << "<Expression> -> <Term> <ExpressionPrime>\n";
-        }
-    }
+    // Check if this is a new statement or not
+    // If not, start a new statement
 
-    return expression;
+    return isStatement;
 }
 
-bool isExpressionPrime(vector<Token> tokens)
+bool checkAssign()
 {
-    bool expressionPrime = false;
+    bool isAssign = false;
 
-    if (tokens[token_ptr].lexeme == "+" || tokens[token_ptr].lexeme == "-")
+    return isAssign;
+}
+
+bool checkDeclarative()
+{
+    bool isDeclarative = false;
+
+    return isDeclarative;
+}
+
+bool checkExpression()
+{
+    bool isExpression = false;
+    Token token = tokens[token_ptr];
+
+    if (token.lexemeNum == IDENTIFIER || isNumeric(token.lexeme) || token.lexeme == "(")
     {
-        moveup();
-        if (isTerm(tokens))
+        if (checkTerm())
         {
-            if (isExpressionPrime(tokens))
+            if (checkExpressionPrime())
             {
-                expressionPrime = true;
-                cout << "<ExpressionPrime> -> + <Term> <ExpressionPrime> | - <Term> <ExpressionPrime> | epsilon \n";
+                cout << "<Expression> -> <Term> <ExpressionPrime>" << endl;
+                isExpression = true;
+            };
+        }
+    } else {
+        cout << "Token in First(<Expression>) expected" << endl;
+    }
+
+    return isExpression;
+}
+
+bool checkTerm()
+{
+    bool isTerm = false;
+    Token token = tokens[token_ptr];
+
+    if (token.lexemeNum == IDENTIFIER || isNumeric(token.lexeme) || token.lexeme == "(")
+    {
+        if (checkFactor())
+        {
+            if (checkTermPrime())
+            {
+                cout << "<Term> -> <Factor> <TermPrime>" << endl;
+                isTerm = true;
+            }
+        }
+    } else {
+        cout << "Token in First(<Term>) expected" << endl;
+    }
+
+    return isTerm;
+}
+
+bool checkExpressionPrime()
+{
+    bool isExpressionPrime = false;
+    Token token = tokens[token_ptr];
+
+    if (token.lexeme == "+" || token.lexeme == "-")
+    {
+        if (checkTerm())
+        {
+            if (checkExpressionPrime())
+            {
+                cout << "<ExpressionPrime> -> " << token.lexeme << " <Term> <ExpressionPrime>" << endl;
+                isExpressionPrime = true;
             }
         }
     }
-    else if (tokens[token_ptr].lexeme != "$" || tokens[token_ptr].lexeme != ")")
+    else if (token.lexeme == "$" || token.lexeme == ")")
     {
-        expressionPrime = true;
-        cout << "<ExpressionPrime> -> + <Term> <ExpressionPrime> | - <Term> <ExpressionPrime> | epsilon \n";
+        // backup();
+        cout << "<ExpressionPrime> -> Epsilon" << endl;
+        isExpressionPrime = true;
+    }
+    else
+    {
+        cout << "Token in First(<ExpressionPrime>) expected" << endl;
     }
 
-    return expressionPrime;
+    return isExpressionPrime;
 }
 
-bool isTerm(vector<Token> tokens)
+bool checkTermPrime()
 {
-    bool term = false;
+    bool isTermPrime = false;
+    Token token = tokens[token_ptr];
 
-    if (isFactor(tokens))
+    if (token.lexeme == "*" || token.lexeme == "/")
     {
-        if (isTermPrime(tokens))
+        if (checkFactor())
         {
-            term = true;
-            cout << "<Term> -> <Factor> <TermPrime>\n";
-        }
-    }
-
-    return term;
-}
-
-bool isTermPrime(vector<Token> tokens)
-{
-    bool termPrime = false;
-
-    if (tokens[token_ptr].lexeme == "*" || tokens[token_ptr].lexeme == "/")
-    {
-        moveup();
-        if (isTerm(tokens))
-        {
-            if (isExpressionPrime(tokens))
+            if (checkTermPrime())
             {
-                termPrime = true;
-                cout << "<TermPrime> -> * <Factor> <TermPrime> | / <Factor> <TermPrime> | epsilon \n";
+                cout << "<TermPrime> -> " << token.lexeme << " <Factor> <TermPrime>" << endl;
+                isTermPrime = true;
             }
         }
     }
-    else if (tokens[token_ptr].lexeme != "$" || tokens[token_ptr].lexeme != ")")
+    else if (token.lexeme == "$" || token.lexeme == ")" || token.lexeme == "+" || token.lexeme == "-")
     {
-        termPrime = true;
-        cout << "<TermPrime> -> * <Factor> <TermPrime> | / <Factor> <TermPrime> | epsilon \n";
+        cout << "<TermPrime> -> Epsilon" << endl;
+        backup();
+        isTermPrime = true;
+    }
+    else
+    {
+        cout << "Token in First(<TermPrime>) expected" << endl;
     }
 
-    return termPrime;
+    return isTermPrime;
 }
 
-bool isFactor(vector<Token> tokens)
+bool checkFactor()
 {
-    bool factor = false;
+    bool isFactor = false;
+    Token token = tokens[token_ptr];
 
-    if (tokens[token_ptr].lexeme == ")") {
-        factor = true;
-        cout << "<Factor> -> ( <Expression> )\n";
-    } else if (isNumeric(tokens[token_ptr].lexeme)) {
-        factor = true;
-        cout << "<Factor> -> num\n";
-    } else if (tokens[token_ptr].lexemeName == "IDENTIFER") {
-        factor = true;
-        cout << "<Factor> -> <Identifier>\n";
+    if (checkIdentifier())
+    {
+        cout << "<Factor> -> <ID>" << endl;
+        isFactor = true;
+    }
+    else if (isNumeric(token.lexeme))
+    {
+        cout << "<Factor> -> num" << endl;
+        isFactor = true;
+    }
+    else if (token.lexeme == "(")
+    {
+        if (checkExpression())
+        {
+            token = tokens[token_ptr];
+            if (token.lexeme == ")")
+            {
+                cout << "<Factor> -> ( <Expression> )" << endl;
+                isFactor = true;
+            }
+        }
     }
 
-    return factor;
+    return isFactor;
+}
+
+bool checkIdentifier()
+{
+    bool isIdentifier = false;
+    Token token = tokens[token_ptr];
+
+    if (token.lexemeNum == IDENTIFIER)
+    {
+        isIdentifier = true;
+        cout << "<ID> -> " << token.lexeme << endl;
+    };
+
+    return isIdentifier;
 }
