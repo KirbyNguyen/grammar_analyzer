@@ -42,7 +42,7 @@ void moveup()
     }
 };
 
-void backup()
+void backdown()
 {
     if (token_ptr > 0)
     {
@@ -114,12 +114,7 @@ int main()
         cout << left << setw(5) << "Token: " << setw(15) << tokens[token_ptr].lexemeName
              << setw(5) << "Lexeme: " << tokens[token_ptr].lexeme << endl;
 
-        if (checkExpression())
-        {
-        }
-        else
-        {
-        };
+        checkStatement();
 
         // Move to the next token
         token_ptr++;
@@ -133,172 +128,266 @@ int main()
     return 0;
 }
 
-// Check if the following sentence is a statement
+// Check if the following sentence is <Statement>
 bool checkStatement()
 {
     bool isStatement = false;
+    Token token = tokens[token_ptr];
+    cout << "In checkStatement(), token is " << token.lexeme << endl;
 
-    // Check if this is a new statement or not
-    // If not, start a new statement
+    if (checkAssign())
+    {
+        cout << "<Statement> -> <Assign>" << endl;
+        isStatement = true;
+    }
+    else if (checkDeclarative())
+    {
+        cout << "<Statement> -> <Declarative>" << endl;
+        isStatement = true;
+    }
 
     return isStatement;
 }
 
+// Check if the following sentence is <Assign>
 bool checkAssign()
 {
     bool isAssign = false;
+    Token token = tokens[token_ptr];
+    cout << "In checkAssign(), token is " << token.lexeme << endl;
+
+    if (checkIdentifier())
+    {
+        moveup();
+        token = tokens[token_ptr];
+
+        if (token.lexeme == "=")
+        {
+            moveup();
+
+            if (checkExpression())
+            {
+                cout << "<Assign> -> <ID> = <Expression>" << endl;
+                isAssign = true;
+            }
+
+            backdown();
+        }
+
+        backdown();
+        token = tokens[token_ptr];
+    }
 
     return isAssign;
 }
 
+// Check if the following sentence is <Declarative>
 bool checkDeclarative()
 {
     bool isDeclarative = false;
+    Token token = tokens[token_ptr];
+    cout << "In checkDeclarative(), token is " << token.lexeme << endl;
+
+    if (checkType())
+    {
+        moveup();
+
+        if (checkIdentifier())
+        {
+            cout << "<Declarative> -> <Type> <ID>" << endl;
+            isDeclarative = true;
+        }
+
+        backdown();
+    }
 
     return isDeclarative;
 }
 
+// Check if the following sentence is <Expression>
 bool checkExpression()
 {
     bool isExpression = false;
     Token token = tokens[token_ptr];
+    cout << "In checkExpression(), token is " << token.lexeme << endl;
 
-    if (token.lexemeNum == IDENTIFIER || isNumeric(token.lexeme) || token.lexeme == "(")
+    if (checkTerm())
     {
-        if (checkTerm())
+        moveup();
+
+        if (checkExpressionPrime())
         {
-            if (checkExpressionPrime())
-            {
-                cout << "<Expression> -> <Term> <ExpressionPrime>" << endl;
-                isExpression = true;
-            }
+            cout << "<Expression> -> <Term> <ExpressionPrime>" << endl;
+            isExpression = true;
         }
-    } else {
-        cout << "Token in First(<Expression>) expected" << endl;
+
+        backdown();
     }
 
     return isExpression;
 }
-
-bool checkTerm()
-{
-    bool isTerm = false;
-    Token token = tokens[token_ptr];
-
-    if (token.lexemeNum == IDENTIFIER || isNumeric(token.lexeme) || token.lexeme == "(")
-    {
-        if (checkFactor())
-        {
-            if (checkTermPrime())
-            {
-                cout << "<Term> -> <Factor> <TermPrime>" << endl;
-                isTerm = true;
-            }
-        }
-    } else {
-        cout << "Token in First(<Term>) expected" << endl;
-    }
-
-    return isTerm;
-}
-
+// Check if the following sentence is <ExpressionPrime>
 bool checkExpressionPrime()
 {
     bool isExpressionPrime = false;
     Token token = tokens[token_ptr];
+    cout << "In checkExpressionPrime(), token is " << token.lexeme << endl;
 
     if (token.lexeme == "+" || token.lexeme == "-")
     {
+        moveup();
+
         if (checkTerm())
         {
+            moveup();
+
             if (checkExpressionPrime())
             {
+                backdown(); // To display the + or -
+                backdown();
+
                 cout << "<ExpressionPrime> -> " << token.lexeme << " <Term> <ExpressionPrime>" << endl;
                 isExpressionPrime = true;
+
+                moveup(); // Move back up to avoid backing down too much
+                moveup();
             }
+
+            backdown();
         }
+
+        backdown();
     }
-    else if (token.lexeme == "$" || token.lexeme == ")")
+    else if (token.lexeme == ")" || token.lexeme == ";")
     {
-        backup();
-        cout << "<ExpressionPrime> -> Epsilon" << endl;
+        cout << "<ExpressionPrime> -> EPSILON" << endl;
         isExpressionPrime = true;
-    }
-    else
-    {
-        cout << "Token in First(<ExpressionPrime>) expected" << endl;
     }
 
     return isExpressionPrime;
 }
 
+// Check if the following sentence is <Term>
+bool checkTerm()
+{
+    bool isTerm = false;
+    Token token = tokens[token_ptr];
+    cout << "In checkTerm(), token is " << token.lexeme << endl;
+
+    if (checkFactor())
+    {
+        moveup();
+
+        if (checkTermPrime())
+        {
+            cout << "<Term> -> <Factor> <TermPrime>" << endl;
+            isTerm = true;
+        }
+
+        backdown();
+    }
+
+    return isTerm;
+}
+
+// Check if the following sentence is <TermPrime>
 bool checkTermPrime()
 {
     bool isTermPrime = false;
     Token token = tokens[token_ptr];
+    cout << "In checkTermPrime(), token is " << token.lexeme << endl;
 
     if (token.lexeme == "*" || token.lexeme == "/")
     {
+        moveup();
+
         if (checkFactor())
         {
+            moveup();
+
             if (checkTermPrime())
             {
+                backdown(); // To display the + or -
+                backdown();
+
                 cout << "<TermPrime> -> " << token.lexeme << " <Factor> <TermPrime>" << endl;
                 isTermPrime = true;
+
+                moveup(); // Move back up to avoid backing down too much
+                moveup();
             }
+
+            backdown();
         }
+
+        backdown();
     }
-    else if (token.lexeme == "$" || token.lexeme == ")" || token.lexeme == "+" || token.lexeme == "-")
+    else if (token.lexeme == ")" || token.lexeme == ";" || token.lexeme == "+" || token.lexeme == "-")
     {
-        cout << "<TermPrime> -> Epsilon" << endl;
-        backup();
+        cout << "<TermPrime> -> EPSILON" << endl;
         isTermPrime = true;
     }
 
     return isTermPrime;
 }
 
+// Check if the following sentence is <Factor>
 bool checkFactor()
 {
     bool isFactor = false;
     Token token = tokens[token_ptr];
+    cout << "In checkFactor(), token is " << token.lexeme << endl;
 
-    if (checkIdentifier())
+    if (token.lexeme == "(")
     {
-        cout << "<Factor> -> <ID>" << endl;
-        isFactor = true;
-    }
-    else if (isNumeric(token.lexeme))
-    {
-        cout << "<Factor> -> num" << endl;
-        isFactor = true;
-    }
-    else if (token.lexeme == "(")
-    {
+        moveup();
+
         if (checkExpression())
         {
+            moveup();
             token = tokens[token_ptr];
+
             if (token.lexeme == ")")
             {
                 cout << "<Factor> -> ( <Expression> )" << endl;
                 isFactor = true;
-            }
+            };
+
+            backdown();
+            token = tokens[token_ptr];
         }
+
+        backdown();
+    }
+    else if (checkIdentifier())
+    {
+        cout << "<Factor> -> <ID>" << endl;
+        isFactor = true;
+    }
+    else if (isNumeric(token.lexeme)) {
+        cout << "<Factor> -> num" << endl;
+        isFactor = true;
     }
 
     return isFactor;
 }
 
+// Check if the following sentence is <Identifier>
 bool checkIdentifier()
 {
     bool isIdentifier = false;
     Token token = tokens[token_ptr];
-
-    if (token.lexemeNum == IDENTIFIER)
-    {
-        isIdentifier = true;
-        cout << "<ID> -> " << token.lexeme << endl;
-    };
+    cout << "In checkIdentifier(), token is " << token.lexeme << endl;
 
     return isIdentifier;
+}
+
+// Check if the following sentence is <Type>
+bool checkType()
+{
+    bool isType = false;
+    Token token = tokens[token_ptr];
+    cout << "In checkType(), token is " << token.lexeme << endl;
+
+    return isType;
 }

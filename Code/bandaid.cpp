@@ -105,7 +105,7 @@ int main()
     return 0;
 }
 
-void backup()
+void backdown()
 {
     token_ptr > 0 ? token_ptr -= token_ptr : token_ptr = token_ptr;
 };

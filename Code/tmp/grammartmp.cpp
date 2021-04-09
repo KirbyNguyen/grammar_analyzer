@@ -126,7 +126,7 @@ int main()
     return 0;
 }
 
-void backup()
+void backdown()
 {
     //token_ptr > 0 ? token_ptr -= token_ptr : token_ptr = 0;
     token_ptr = (token_ptr > 0 ? token_ptr - 1 : 0);
@@ -222,7 +222,7 @@ bool isQ()
     }*/
     else if (cc[0] == ')' || cc[0] == '$')
     {
-        backup();
+        backdown();
         cout << "<ExpressionPrime> -> eps\n";
         cout << "Token in Follow of (E') expected\n";
         q = true;
@@ -316,7 +316,7 @@ bool isR()
     else if (ss[0] == '$' || ss[0] == ')' || ss[0] == '+' || ss[0] == '-')
     {
       cout << "<Empty> -> Epsilon\n";
-      backup();
+      backdown();
       r = true;
 
       //cout << "Token in Follow of (T') expected\n";
