@@ -114,7 +114,27 @@ int main()
         cout << left << setw(5) << "Token: " << setw(15) << tokens[token_ptr].lexemeName
              << setw(5) << "Lexeme: " << tokens[token_ptr].lexeme << endl;
 
-        checkStatement();
+        cout << "===========BEFORE THE LOOP===========" << endl;
+        cout << "duringStatement is " << (duringStatement ? "true" : "false") << endl;
+
+        if (tokens[token_ptr].lexeme == ";")
+        {
+            duringStatement = false;
+        }
+        else if (duringStatement)
+        {
+            checkExpression();
+        }
+        else if (!duringStatement)
+        {
+            if (checkStatement())
+            {
+                duringStatement = true;
+            }
+        };
+
+        cout << "===========AFTER THE LOOP===========" << endl;
+        cout << "duringStatement is " << (duringStatement ? "true" : "false") << endl;
 
         // Move to the next token
         token_ptr++;
@@ -364,7 +384,8 @@ bool checkFactor()
         cout << "<Factor> -> <ID>" << endl;
         isFactor = true;
     }
-    else if (isNumeric(token.lexeme)) {
+    else if (isNumeric(token.lexeme))
+    {
         cout << "<Factor> -> num" << endl;
         isFactor = true;
     }
@@ -379,6 +400,12 @@ bool checkIdentifier()
     Token token = tokens[token_ptr];
     cout << "In checkIdentifier(), token is " << token.lexeme << endl;
 
+    if (token.lexemeNum == IDENTIFIER)
+    {
+        cout << "<ID> -> " << token.lexeme << endl;
+        isIdentifier = true;
+    }
+
     return isIdentifier;
 }
 
@@ -388,6 +415,16 @@ bool checkType()
     bool isType = false;
     Token token = tokens[token_ptr];
     cout << "In checkType(), token is " << token.lexeme << endl;
+
+    if (token.lexemeNum == KEYWORD)
+    {
+
+        if (token.lexeme == "bool" || token.lexeme == "float" || token.lexeme == "int")
+        {
+            cout << "<Type> -> " << token.lexeme << endl;
+            isType = true;
+        }
+    }
 
     return isType;
 }
