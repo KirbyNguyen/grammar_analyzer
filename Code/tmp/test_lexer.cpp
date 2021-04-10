@@ -143,7 +143,32 @@ struct Token
 	}
 };
 
+struct Node
+{
+    Token parent;
+    Token lc;
+    Token rc;
+};
 
+struct Tree
+{
+    
+};
+struct Graph
+{
+    Node root;
+    int n;
+    vector< vector<int> > v;
+};
+
+vector<Node> nodes;
+vector<Node> fillNodes(vector<Token> v);
+
+vector<Node> fillNodes(vector<Token> v)
+{
+
+	return nodes;
+}
 
 // Set to hold seperators
 static const unordered_set<char> SEPERATORS({'{', '}', '[', ']', '(', ')', ',', '.', ';', ':'});
