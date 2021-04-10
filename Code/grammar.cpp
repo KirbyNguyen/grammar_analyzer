@@ -27,6 +27,7 @@ bool checkType();
 // Acknowledge if this is a statement or not
 // DEFAULT: false
 bool duringStatement = false;
+bool duringExpression = false;
 
 // A vector to hold the tokens
 vector<Token> tokens;
@@ -114,16 +115,27 @@ int main()
         cout << left << setw(5) << "Token: " << setw(15) << tokens[token_ptr].lexemeName
              << setw(5) << "Lexeme: " << tokens[token_ptr].lexeme << endl;
 
-        cout << "===========BEFORE THE LOOP===========" << endl;
-        cout << "duringStatement is " << (duringStatement ? "true" : "false") << endl;
+        if (duringStatement)
+        {
+            if (tokens[token_ptr].lexeme == ";")
+            {
+                duringStatement = false;
+                duringExpression = false;
+            }
+            else if (duringExpression)
+            {
+                if (checkTerm()) {
 
-        if (tokens[token_ptr].lexeme == ";")
-        {
-            duringStatement = false;
-        }
-        else if (duringStatement)
-        {
-            checkExpression();
+                } else if (checkTermPrime()) {
+                    checkExpressionPrime();
+                };
+            }
+            else if (!duringExpression)
+            {
+                if(checkExpression()) {
+                    duringExpression = true;
+                };
+            };
         }
         else if (!duringStatement)
         {
@@ -132,9 +144,6 @@ int main()
                 duringStatement = true;
             }
         };
-
-        cout << "===========AFTER THE LOOP===========" << endl;
-        cout << "duringStatement is " << (duringStatement ? "true" : "false") << endl;
 
         // Move to the next token
         token_ptr++;
@@ -153,7 +162,7 @@ bool checkStatement()
 {
     bool isStatement = false;
     Token token = tokens[token_ptr];
-    cout << "In checkStatement(), token is " << token.lexeme << endl;
+    // cout << "In checkStatement(), token is " << token.lexeme << endl;
 
     if (checkAssign())
     {
@@ -174,7 +183,7 @@ bool checkAssign()
 {
     bool isAssign = false;
     Token token = tokens[token_ptr];
-    cout << "In checkAssign(), token is " << token.lexeme << endl;
+    // cout << "In checkAssign(), token is " << token.lexeme << endl;
 
     if (checkIdentifier())
     {
@@ -206,7 +215,7 @@ bool checkDeclarative()
 {
     bool isDeclarative = false;
     Token token = tokens[token_ptr];
-    cout << "In checkDeclarative(), token is " << token.lexeme << endl;
+    // cout << "In checkDeclarative(), token is " << token.lexeme << endl;
 
     if (checkType())
     {
@@ -229,7 +238,7 @@ bool checkExpression()
 {
     bool isExpression = false;
     Token token = tokens[token_ptr];
-    cout << "In checkExpression(), token is " << token.lexeme << endl;
+    // cout << "In checkExpression(), token is " << token.lexeme << endl;
 
     if (checkTerm())
     {
@@ -251,7 +260,7 @@ bool checkExpressionPrime()
 {
     bool isExpressionPrime = false;
     Token token = tokens[token_ptr];
-    cout << "In checkExpressionPrime(), token is " << token.lexeme << endl;
+    // cout << "In checkExpressionPrime(), token is " << token.lexeme << endl;
 
     if (token.lexeme == "+" || token.lexeme == "-")
     {
@@ -292,7 +301,7 @@ bool checkTerm()
 {
     bool isTerm = false;
     Token token = tokens[token_ptr];
-    cout << "In checkTerm(), token is " << token.lexeme << endl;
+    // cout << "In checkTerm(), token is " << token.lexeme << endl;
 
     if (checkFactor())
     {
@@ -315,7 +324,7 @@ bool checkTermPrime()
 {
     bool isTermPrime = false;
     Token token = tokens[token_ptr];
-    cout << "In checkTermPrime(), token is " << token.lexeme << endl;
+    // cout << "In checkTermPrime(), token is " << token.lexeme << endl;
 
     if (token.lexeme == "*" || token.lexeme == "/")
     {
@@ -356,7 +365,7 @@ bool checkFactor()
 {
     bool isFactor = false;
     Token token = tokens[token_ptr];
-    cout << "In checkFactor(), token is " << token.lexeme << endl;
+    // cout << "In checkFactor(), token is " << token.lexeme << endl;
 
     if (token.lexeme == "(")
     {
@@ -398,7 +407,7 @@ bool checkIdentifier()
 {
     bool isIdentifier = false;
     Token token = tokens[token_ptr];
-    cout << "In checkIdentifier(), token is " << token.lexeme << endl;
+    // cout << "In checkIdentifier(), token is " << token.lexeme << endl;
 
     if (token.lexemeNum == IDENTIFIER)
     {
@@ -414,7 +423,7 @@ bool checkType()
 {
     bool isType = false;
     Token token = tokens[token_ptr];
-    cout << "In checkType(), token is " << token.lexeme << endl;
+    // cout << "In checkType(), token is " << token.lexeme << endl;
 
     if (token.lexemeNum == KEYWORD)
     {
