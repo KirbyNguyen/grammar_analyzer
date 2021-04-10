@@ -20,6 +20,8 @@ Instructions
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <algorithm>
+#include <map>
 
 using namespace std;
 
@@ -57,12 +59,116 @@ int stateTable[][9] = {
 /*
     A struct to hold a token information
 */
+
+/*static const unordered_map<int, unordered_set<string> > PRIORITIES({
+								{1, {"+", "-"}},
+								{2, {"*", "/"}}
+								{3, {"(", ")"}}
+								{4, {"="}}
+								});*/
+
+/*static const map<pair<string, string>, int > PRIORITIES({
+								{{"+", "-"}, 5},
+								{{"*", "/"}, 4},
+								{{"(", ")"}, 3},
+								{{"=", "$"}, 2}
+								});*/
+
+static const map <string,int> PRIORITIES({
+								{";", 6},
+								{"+", 5}, {"-", 5}, 
+								{"*", 4}, {"/", 4},
+								{"(", 3}, 
+								{")", 2},
+								{"$", 1},
+								{"=", 0}, {">", 0}, {">", 0}, {"<=", 0}, {">=", 0} 
+								});
+
+
+static const unordered_set<string> NONTERMINALS({"+", "-", "*", "/", "=", "{", "}", "[", "]", ",", ":", "<", ">",
+												 "<=", ">=", "%", "_", "#", "@", "&", "epsilon", "placeholder~" });
 struct Token
 {
+	int index, prio = 10;
 	int lexemeNum;
 	string lexeme;
 	string lexemeName;
+	bool terminal;
+	string expr[10];
+	
+	void setPrio()
+	{
+		if (isalnum(lexeme[0]))
+		{
+			prio = 10;
+		}
+		else if (PRIORITIES.count(lexeme))
+		{
+			//for (auto it = PRIORITIES.begin(); it != PRIORITIES.end(); it++)
+			//{
+			//	if (it.find(lexeme) != it.end())
+			//}
+			//for (const auto& p : PRIORITIES)
+			//{
+			//	if (p.first == lexeme && p.second == lexeme)
+			//}
+			prio = PRIORITIES.at(lexeme);
+
+		}
+		else
+		{
+			prio = -1;
+		}
+		
+		
+	}
+	bool isTerminal()
+	{
+		terminal = (NONTERMINALS.find(lexeme) == NONTERMINALS.end());
+		return terminal;
+	}
+
+	void setTerminal(bool b)
+	{
+		terminal = b;
+	}
+
+	void assignExpr(string s, int i)
+	{
+		expr[i] += (s + " ");
+	}
+	Token getNext(Token tk)
+	{
+		return tk; 
+	}
 };
+
+struct Node
+{
+    Token parent;
+    Token lc;
+    Token rc;
+};
+
+struct Tree
+{
+    
+};
+struct Graph
+{
+    Node root;
+    int n;
+    vector< vector<int> > v;
+};
+
+vector<Node> nodes;
+vector<Node> fillNodes(vector<Token> v);
+
+vector<Node> fillNodes(vector<Token> v)
+{
+
+	return nodes;
+}
 
 // Set to hold seperators
 static const unordered_set<char> SEPERATORS({'{', '}', '[', ']', '(', ')', ',', '.', ';', ':'});
@@ -100,7 +206,6 @@ vector<Token> lexer(string expression)
 	// Go through each character
 	for (unsigned x = 0; x < expression.length();)
 	{
-
 		// Check the current state of the character
 		currentChar = expression[x];
 		charState = getCharState(currentChar, prevState);
