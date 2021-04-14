@@ -72,10 +72,10 @@ int main()
     string line = "";
 
     // Money sign to mark the end of the file
-    Token moneySign;
-    moneySign.lexemeNum = 4;
-    moneySign.lexeme = '$';
-    moneySign.lexemeName = "SEPERATOR";
+    // Token moneySign;
+    // moneySign.lexemeNum = 4;
+    // moneySign.lexeme = '$';
+    // moneySign.lexemeName = "SEPERATOR";
 
     // Read the file
     cout << "\nPlease enter the name of the file: ";
@@ -100,7 +100,7 @@ int main()
         tokens.insert(tokens.end(), temp.begin(), temp.end());
     }
 
-    tokens.push_back(moneySign);
+    // tokens.push_back(moneySign);
 
     // Parse the tree
     while (token_ptr < tokens.size())
