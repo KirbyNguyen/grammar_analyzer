@@ -104,6 +104,7 @@ int main()
     token_ptr = 0;
 
     // Determine each token in the line
+    // Forces a semicolon at the end of lines to ensure a boundary exists between sentences
     while (getline(infile, line))
     {
         vector<Token> temp = lexer(line);
@@ -119,9 +120,10 @@ int main()
     // Close the file
     infile.close();
     infile.clear();
-   
+    /*
     // Parse the file one sentence (line) at a time
-    //Expr is a helper class to determine syntax using tabular method
+    // Expr is a helper class to determine syntax using tabular method
+    */
     Expr expr;
     string tempstring, prev;
     t = clock();
