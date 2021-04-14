@@ -10,8 +10,6 @@
 #include <iomanip>
 #include <stack>
 
-//#include "lexer_v101.cpp"
-
 using namespace std;
 
 /*
@@ -61,7 +59,7 @@ class Expr
     string str2;
     vector<string> expanded;
     unordered_set<string> expansion;
-    string str3;
+    string prev;
     int curr = 0;
     bool assigned = false;
     bool once = true;
@@ -190,59 +188,59 @@ class Expr
 
     string getLex(string tk)
     {
+        string tmp, tmp2;
         if (isalpha(tk[0]))
         {
+            tmp = (KEYS.find(tk) != KEYS.end() ? "KEYWORD" : "IDENTIFIER");
+            if (prev == tmp)
+            {
+                cout << "\nCRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
+            }
+            prev = tmp;
             return (KEYS.find(tk) != KEYS.end() ? "KEYWORD" : "IDENTIFIER");
         }
         if (isdigit(tk[0]))
         {
+            tmp = "INTEGER";
+            if (prev == tmp)
+            {
+                cout << "\nCRITICAL SYNTAX ERROR : Consecutive " << tmp << "tokens found in the sentence!\n** Now Exiting..."; exit(1);
+            }
+            prev = tmp;
             return "INTEGER";
         }
         if (OPS.find(tk[0]) != OPS.end())
         {
+            tmp = "OPERATOR";
+            if (prev == tmp)
+            {
+                cout << "\nCRITICAL SYNTAX ERROR : Consecutive " << tmp << "tokens found in the sentence!\n** Now Exiting..."; exit(1);
+            }
+            prev = tmp;
             return "OPERATOR";
         }
         if (SEPS.find(tk[0]) != SEPS.end())
         {
+            tmp = "SEPARATOR";
+            if (tk == ";" && prev == "OPERATOR")
+            {
+                cout << "\nCRITICAL SYNTAX ERROR : " << tmp << " right before " << tk << " token!\n** Now Exiting..."; exit(1);
+                exit(1);
+            }
+            if (tk == tmp2 && tmp2 != "(")
+            {
+                cout << "\nWarning : consecutive " << tmp2 << "tokens in the same sentence!\n";
+            }
+            if (tmp2 == "(" && tk == ")")
+            {
+                cout << "\nCRITICAL SYNTAX ERROR : Empty parenthetical enclosure\n** Now Exiting..."; exit(1);
+            }
+            prev = tmp;
+            tmp2 = tk;
             return "SEPARATOR";
         }
+        cout << "\nCRITICAL SYNTAX ERROR : Illegal or mismatched token present in the sentence!\n** Now Exiting..."; exit(1);
         return NULL;
-    }
-
-    bool interpret(vector<string> input, int current = 0)
-    {
-
-        stk.push("$"); stk.push("E");
-        string a, X;
-        for(;;) {
-            cout << "Token = " << input[current] << endl;
-            cout << "STACK TOP VALUE = " << stk.top() << endl;
-            a = input[current];
-            X = stk.top();
-            if (isTerminal(X) || X == "$") 
-            {
-                if (a == X) 
-                {
-                    stk.pop(); 
-                    current++;
-                }   
-                else {return false;}
-            } 
-            else
-            {
-                stk.pop();
-                string prod = table(X,a);
-                if (prod=="nil") {return false;}
-                
-                cout << "Token = " << input[current] << endl;
-                cout << "STACK TOP VALUE = " << stk.top() << endl;
-                for(int i=prod.length()-1;i>=0;i--)
-                {
-                    stk.push(prod.substr(i,1));
-                }
-            }
-            if (X == "$") return true;
-        }
     }
 
     bool interpret()
@@ -300,7 +298,8 @@ class Expr
                         once = true;
                         return true;
                     }
-                    cout << "interpreted value = false\nreason : token " << a << " does not match stack top " << X << endl << endl;
+                    cout << "interpreted value = false\nreason : bad token " << a << " is not compatible with stack top " << X << "\n** Now Exiting...";
+                    exit(1);
                     return false;
                 }
             } 
@@ -332,7 +331,8 @@ class Expr
                 //cout << "NEW STACK TOP VALUE = " << stk.top() << endl;
                 if (prod == "nil") 
                 {
-                    cout << "interpreted value = false\n";
+                    cout << "\n** ERROR - interpreted value = false\nreason : token " << a << " has broken a nil production rule\n** Now Exiting...";
+                    exit(1);
                     return false;
                 }
                 for(int i=prod.length()-1;i>=0;i--)
