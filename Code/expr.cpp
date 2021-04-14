@@ -78,11 +78,11 @@ class Expr
 
     string RULES[5][10] = {
     //        id      +     -      *         /      (       )       $       ;         =
-            {"Te",  "nil", "nil",  "nil",  "nil",  "Te",   "nil",  "nil",   "",    "skip"},    // E        E  ->  T E'
-            {"nil", "+Te", "-Te",  "nil",  "nil",  "nil",   "",    "",      "",    "skip"},    // E’       E' ->  +- T E' | epsilon
-            {"Ft",  "nil", "nil",  "nil",  "nil",  "Ft",   "nil",  "nil",   "",    "skip"},    // T        T  ->  F T'
-            {"nil",   "",    "",   "*Ft",  "/Ft",  "nil",   "",     "",     "",    "skip"},    // T’       T' ->  */ F T' | epsilon
-            {"i",   "nil", "nil",  "nil",  "nil",  "(E)",  "nil",  "nil",  "nil",  "skip"}     // F        F  ->  ( E )   | id
+            {"Te",  "nil", "nil",  "nil",  "nil",  "Te",   "nil",  "nil",   "",    "skip"},    // E        E  ->  T E'                  in the table : e = E'
+            {"nil", "+Te", "-Te",  "nil",  "nil",  "nil",   "",    "",      "",    "skip"},    // E’       E' ->  +- T E' | epsilon     in the table : e = E' , "" = epsilon
+            {"Ft",  "nil", "nil",  "nil",  "nil",  "Ft",   "nil",  "nil",   "",    "skip"},    // T        T  ->  F T'                  in the table : t = T'
+            {"nil",   "",    "",   "*Ft",  "/Ft",  "nil",   "",     "",     "",    "skip"},    // T’       T' ->  */ F T' | epsilon     in the table : t = T' , "" = epsilon
+            {"i",   "nil", "nil",  "nil",  "nil",  "(E)",  "nil",  "nil",  "nil",  "skip"}     // F        F  ->  ( E )   | id          in the table : i stands for id
     };
 
     int newRULES[5][10] = {
@@ -342,13 +342,13 @@ class Expr
                     //cout << "pushed stack value for " << a << " : "<< stk.top() << endl;
                     if ((a == "+" || a == "-" || a == "*" || a == "/") && (prod[i] == 'e' || prod[i] == 't'))
                     {
-                        expansion.insert("~");
+                        expansion.insert("~");  // for EPSILON use
                     }
                 } 
                 //str3 += prod;
                 if (prod == "")
                 {
-                    expansion.insert("~");
+                    expansion.insert("~");      // for EPSILON use
                 }
                 //expandTerms();
                 //expansion.clear();
