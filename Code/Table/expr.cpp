@@ -56,12 +56,12 @@ class Expr
     stack<string> stk;                  // stack for pushing and popping table elements (shorthand production tokens)
     string str2;                        // holds each sentence passed into the interpret()
     unordered_set<string> expansion;    // holds production rules from the stack in the proper order to be expanded and prevents duplicates
-    vector<string> expanded;            // holds expanded production tokens values to be printed out
+    vector<string> expanded;            // holds expanded production rules
     string prev;                        // holds previous lexeme, used for syntax checks
     int curr = 0;                       // current string ptr
     bool assigned = false;              // false if an assignment-statement is needed (before EQUALS sign)
     bool once = true;                   // prevent printing assignment-statement multiple times
-    string op;                          // specifies operator in the production tokens for ±Te, *Ft, /Ft during printing
+    //string op;                          // specifies operator in the production tokens for ±Te, *Ft, /Ft during printing
 
     bool isTerminal(string S) 
     {
@@ -74,13 +74,14 @@ class Expr
     // Expression production rules starting with E -> T E'
     string RULES[5][10] = {
     //        id      +     -      *         /      (       )       $       ;         =
-            {"Te",  "nil", "nil",  "nil",  "nil",  "Te",   "nil",  "nil",   "",    "skip"},    // E        E  ->  T E'                  in the table : e = E'
-            {"nil", "+Te", "-Te",  "nil",  "nil",  "nil",   "",    "",      "",    "skip"},    // E’       E' ->  +- T E' | epsilon     in the table : e = E' , "" = epsilon
-            {"Ft",  "nil", "nil",  "nil",  "nil",  "Ft",   "nil",  "nil",   "",    "skip"},    // T        T  ->  F T'                  in the table : t = T'
-            {"nil",   "",    "",   "*Ft",  "/Ft",  "nil",   "",     "",     "",    "skip"},    // T’       T' ->  */ F T' | epsilon     in the table : t = T' , "" = epsilon
-            {"i",   "nil", "nil",  "nil",  "nil",  "(E)",  "nil",  "nil",  "nil",  "skip"}     // F        F  ->  ( E )   | id          in the table : i stands for id
+            {"Te",  "nil", "nil",  "nil",  "nil",  "Te",   "nil",  "nil",   "",    "skip"},    //     E  ->  T E'                  in the table : e = E'
+            {"nil", "+Te", "-Te",  "nil",  "nil",  "nil",   "",    "",      "",    "skip"},    //     E' ->  +- T E' | epsilon     in the table : e = E' , "" = epsilon
+            {"Ft",  "nil", "nil",  "nil",  "nil",  "Ft",   "nil",  "nil",   "",    "skip"},    //     T  ->  F T'                  in the table : t = T'
+            {"nil",   "",    "",   "*Ft",  "/Ft",  "nil",   "",     "",     "",    "skip"},    //     T' ->  */ F T' | epsilon     in the table : t = T' , "" = epsilon
+            {"i",   "nil", "nil",  "nil",  "nil",  "(E)",  "nil",  "nil",  "nil",  "skip"}     //     F  ->  ( E )   | id          in the table : i stands for id
     };
 
+    // may get rid of this
     int newRULES[5][10] = {
     //        id          +          -          *         /             (                   )          $          ;         =
             {Te,       INVALID,   INVALID,   INVALID,   INVALID,     Te,                 INVALID,   NOTHNG,   EPSILON,   NOTHNG},    // E
@@ -145,7 +146,7 @@ class Expr
             
             return "";
         }
-        //  needs fixing
+        //  needs fixing ~ done
         //  Production Rules for all tokens belonging to Expression are printed here
         for (char c : S)
         {
@@ -160,19 +161,19 @@ class Expr
                         tmp += "    <ExpressionPrime> -> + <Term> <ExpressionPrime> | - <Term> <ExpressionPrime> | <Empty> ";
                     }
                     break;
-                case '+' :      //  expand E' -> ± T E' | epsilon
+                case '+' :      //  expand E' -> + T E' | epsilon
                     tmp += "    <Expression Prime> -> + <Term> <ExpressionPrime> | <Empty> ";      
                     break;
-                case '-' :
+                case '-' :      //  expand E' -> - T E' | epsilon
                     tmp += "    <Expression Prime> -> - <Term> <ExpressionPrime> | <Empty> "; 
                     break;
                 case 'T' :      //  expand T -> F T' | epsilon
                     tmp += "    <Term> -> <Factor> <TermPrime> ";
                     break;
-                case '*' :
+                case '*' :      //  expand T' -> * F T' | epsilon
                     tmp += "    <Term Prime> -> * <Factor> <TermPrime> | <Empty> ";
                     break;
-                case '/' :
+                case '/' :      //  expand T' -> / F T' | epsilon
                     tmp += "    <Term Prime> -> / <Factor> <TermPrime> | <Empty> ";
                     break;
                 case 't' :      //  ONLY print on semicolon  ::  expand T' -> F T' | epsilon    (false positives on Ft, *Ft, /Ft))
@@ -182,7 +183,7 @@ class Expr
                     }
                     break;
                 case 'F' :      //  ONLY print on id or (  ::  expand F -> ( E ) | id | num     (false positives on *Ft and /Ft)
-                    if (str2[curr] == ')' || isalnum(str2[curr]))
+                    if (str2[curr] == '(' || isalnum(str2[curr]))
                     {
                         tmp += "    <Factor> -> ( Expression ) | <ID> | <Num> ";
                     }
@@ -196,23 +197,9 @@ class Expr
                 default  :
                     tmp += "    <Empty> -> Epsilon ";
                     break;
-                //  if operator is part of production rules, add to the corresponding statement during printing
-                /*case '+' :  
-                    op = '+';
-                    break;
-                case '-' :
-                    op = '-'; 
-                    break;
-                case '*' :
-                    op = '*';
-                    break;       
-                case '/' :
-                    op = '/';
-                    break;*/
-                
             }
         }
-        // don't print an empty line
+        // don't print empty lines
         if (tmp!= "") { cout << tmp << endl; }
         return tmp;
     }
@@ -305,7 +292,7 @@ class Expr
         //  Start stack with basic default elements
         stk.push("$"); stk.push("E");
         string a, X;
-
+        //  a = current lexeme, X = top of stack
         //  Loop until error or end of sentence / bottom of stack is reached
         for(;;) {
             a = str2[curr];
@@ -317,7 +304,7 @@ class Expr
                 {
                     if (curr != index)      //  logic check for bad syntax
                     {
-                        cout << "Bad Syntax Error : " << a << " was found multiple times in the current sentence\n** Now Exiting..."; exit(-1);
+                        cout << "Bad Syntax Error : multiple instances of the lexeme { " << a << " } were found in the current sentence\n** Now Exiting..."; exit(-1);
                     }
                 }
                 //  don't assign after EQUALS sign
@@ -427,14 +414,9 @@ class Expr
     //  Process contents of expansion (unordered set) so the Production Rules can be printed
     vector<string> expandTerms()
     {
-        op = "";
         vector<string> tmp;
         for (string st : expansion)
         {
-            if (st == ";")
-            {
-                
-            }
             tmp.push_back(convert(st));            
         }
         expanded = tmp;
