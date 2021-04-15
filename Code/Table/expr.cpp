@@ -54,6 +54,7 @@ class Expr
 {
     public:
     stack<string> stk;                  // stack for pushing and popping table elements (shorthand production tokens)
+    deque<string> fullstack;            // deque stores the whole stack contents for parse tree (only reset after statement or on new sentence)
     string str2;                        // holds each sentence passed into the interpret()
     unordered_set<string> expansion;    // holds production rules from the stack in the proper order to be expanded and prevents duplicates
     vector<string> expanded;            // holds expanded production rules
@@ -114,7 +115,10 @@ class Expr
             case ';' : col=8; break;
             case '=' : col=9; break;
             case '#' : col=9; break;
-            default: cout << "ERROR while looking up table\n"; exit(-1); break;
+            default  : cout << "\n[line 118/105/96 expr.cpp] SYNTAX ERROR while looking up table : "+a+" is not a valid token!\n"
+                             "**Now Exiting...";
+                       exit(-1); 
+                       break;
         }
         //  get column of the table that corresponds to the token type
         switch (X[0]) 
@@ -138,7 +142,8 @@ class Expr
             if (once)
             {
                 tmp = "     <Statement> -> <Assign>\n     <Assign> -> <ID> = <Expression>;\n"
-                      "     <Statement> -> <Declarative>\n     <Declarative> -> <Type> <ID>\n";     // not sure about this line
+                      "     <Statement> -> <Declarative>\n     <Declarative> -> <Type> <ID>\n"
+                      "     <Type> -> bool | float | int>\n";     // not sure about this line
                 cout << tmp;
                 //  prevent printing this multiple times
                 once = false;
@@ -158,7 +163,7 @@ class Expr
                 case 'e' :      //  ONLY print on semicolon  ::  expand E' -> ± T E' | epsilon   (false positives on Te, +Te, -Te)
                     if (str2[curr] == ';')
                     {
-                        tmp += "    <ExpressionPrime> -> + <Term> <ExpressionPrime> | - <Term> <ExpressionPrime> | <Empty> ";
+                        tmp += "    <Empty> -> Epsilon\n    <ExpressionPrime> -> + <Term> <ExpressionPrime> | - <Term> <ExpressionPrime> | <Empty> ";
                     }
                     break;
                 case '+' :      //  expand E' -> + T E' | epsilon
@@ -213,7 +218,7 @@ class Expr
             tmp = (KEYS.find(tk) != KEYS.end() ? "KEYWORD" : "IDENTIFIER");
             if (prev == tmp)
             {
-                cout << "\nCRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
+                cout << "\n[line 219/216 expr.cpp] CRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
             }
             prev = tmp;
             tmp2 = tk;
@@ -225,7 +230,7 @@ class Expr
             tmp = "INTEGER";
             if (prev == tmp)
             {
-                cout << "\nCRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
+                cout << "\n[line 231/228 expr.cpp] CRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
             }
             prev = tmp;
             tmp2 = tk;
@@ -237,7 +242,7 @@ class Expr
             tmp = "OPERATOR";
             if (prev == tmp)
             {
-                cout << "\nCRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
+                cout << "\n** [line 242/240 expr.cpp] SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
             }
             prev = tmp;
             tmp2 = tk;
@@ -249,34 +254,35 @@ class Expr
             tmp = "SEPARATOR";
             if (tk == ";" && prev == "OPERATOR")
             {
-                cout << "\nCRITICAL SYNTAX ERROR : " << tmp << " right before " << tk << " token!\n** Now Exiting..."; exit(1);
+                cout << "\n** [line 255/252 expr.cpp] SYNTAX ERROR : " << tmp << " right before " << tk << " token!\n** Now Exiting..."; exit(1);
                 exit(1);
             }
             if (tk == tmp2)
             {
                 if (tk != "(" && tk != ")")
                 {
-                    cout << "\nCRITICAL SYNTAX ERROR : consecutive " << tk << " tokens in the same sentence!\n** Now Exiting..."; exit(1);
+                    cout << "\n** [line 262/260/252 expr.cpp] SYNTAX ERROR : consecutive " << tk << " tokens in the same sentence!\n** Now Exiting..."; exit(1);
                 }
                 cout << "\nWarning : consecutive " << tk << " tokens encountered\n";
             }
-            if (tmp2 == "(" && tk == ")")
+            else if (tmp2 == "(" && tk == ")")
             {
-                cout << "\nCRITICAL SYNTAX ERROR : Empty parenthetical enclosure\n** Now Exiting..."; exit(1);
+                cout << "\n** [line 268/252 expr.cpp] SYNTAX ERROR : Empty parenthetical enclosure\n** Now Exiting..."; exit(1);
             }
             prev = tmp;
             tmp2 = tk;
             return "SEPARATOR";
         }
         //  crashes if a token that does not belong to any of the above groups made it to this point
-        cout << "\nCRITICAL SYNTAX ERROR : Illegal or mismatched token present in the sentence!\n** Now Exiting..."; exit(1);
+        cout << "\n** [line 212/275 expr.cpp] SYNTAX ERROR : Illegal or mismatched token present in the sentence!\n** Now Exiting..."; exit(1);
         return NULL;
     }
 
     bool interpret()
     {   
         int index;                                      // only holds index of first EQUALS sign, if one exists
-        if (str2[curr] == '!' || str2[curr] == '_')     // stop running if illegal character passed into function
+        //  ignore comment blocks and special characters
+        if (str2[curr] == '!' || str2[curr] == '_')     // don't parse if these characters are found
         {
             return false;
         }
@@ -290,7 +296,9 @@ class Expr
         cout << "\n\n   ::::::::::::::::: New Sentence :::::::::::::::::   " << str2 << "\n\n\n";
         cout << "Token: " << getLex(str2.substr(curr,1)) << "      " << "Lexeme:    " << str2[curr] << endl;
         //  Start stack with basic default elements
-        stk.push("$"); stk.push("E");
+        stk.push("$"); 
+        stk.push("E");
+        fullstack.push_front("E");
         string a, X;
         //  a = current lexeme, X = top of stack
         //  Loop until error or end of sentence / bottom of stack is reached
@@ -304,7 +312,7 @@ class Expr
                 {
                     if (curr != index)      //  logic check for bad syntax
                     {
-                        cout << "Bad Syntax Error : multiple instances of the lexeme { " << a << " } were found in the current sentence\n** Now Exiting..."; exit(-1);
+                        cout << "[line 313/289 expr.cpp] Bad Syntax Error : multiple instances of the lexeme { " << a << " } were found in the current sentence\n** Now Exiting..."; exit(-1);
                     }
                 }
                 //  don't assign after EQUALS sign
@@ -322,7 +330,7 @@ class Expr
                     //  Increment token pointer
                     expansion.insert(expansion.begin(), stk.top());
                     expandTerms();
-                    expansion.clear();
+                    expansion.clear();                  
                     stk.pop(); 
                     curr++;
                     if (!assigned)
@@ -338,14 +346,31 @@ class Expr
                 {
                     if (a == ";")
                     {
+                        fullstack.push_front("&");
                         expandTerms();
                         expansion.clear();
+                        cout << "\nParse Tree contents (& stands for Epsilon): \n";
+                        while (!fullstack.empty())
+                        {
+                            string cc = fullstack.back();
+                            switch (cc[0])
+                            {
+                                case 'e' : cc = "E'"; break;
+                                case 't' : cc = "T'"; break;
+                                case 'i' : cc = "id"; break;
+                                //case '&' : cc = "eps"; break;
+                                default : break;
+                            }
+                            cout << cc << " ";
+                            fullstack.pop_back();
+                        }
                         curr = 0;
                         assigned = false;
                         once = true;
                         return true;
                     }
-                    cout << "interpreted value = false\nreason : bad token " << a << " is not compatible with stack top " << X << "\n** Now Exiting...";
+                    cout << "\n** [line 347/343/323 expr.cpp] SYNTAX ERROR: interpreted value = false\nreason : bad token " 
+                         << a << " is not compatible with stack top " << X << "\n** Now Exiting...";
                     exit(1);
                     return false;
                 }
@@ -369,6 +394,8 @@ class Expr
                     expansion.clear();
                     stk.push("$");
                     stk.push("E");
+                    fullstack.clear();
+                    fullstack.push_front("E");
                     assigned = true;
                     curr++;
                     cout << "\nToken = " << getLex(str2.substr(curr,1)) << "           " << "Lexeme: " << str2[curr] << "\n";
@@ -384,8 +411,9 @@ class Expr
                 //  Breakpoint for bad syntax: rule mismatch
                 if (prod == "nil") 
                 {
-                    cout << "\n** ERROR - interpreted value = false\nreason : token " << a << " has broken a nil production rule\n** Now Exiting...";
-                    exit(1);
+                    cout << "\n** [line 412/382 expr.cpp] SYNTAX ERROR - interpreted value = false\nreason : token "
+                         << a << " has broken a nil production rule\n** Now Exiting...";
+                    exit(-1);
                     return false;
                 }
                 // Insert each letter of the production rule onto the top of the stack
@@ -393,17 +421,20 @@ class Expr
                 for(int i = prod.length() - 1; i>=0; i--)
                 {
                     stk.push(prod.substr(i,1));
+                    fullstack.push_front(stk.top());
                     expansion.insert(expansion.begin(), prod.substr(i,1));
                     // Insert EPSILON if requirements are met                  
                     if ((a == "+" || a == "-" || a == "*" || a == "/") && (prod[i] == 'e' || prod[i] == 't'))
                     {
-                        expansion.insert("~");  // for EPSILON use
+                        expansion.insert("~");      // for EPSILON use
+                        fullstack.push_front("&");  // "&" is EPSILON for printing parse tree
                     }
                 }
                 // Insert EPSILON if table lookup condition is met    
                 if (prod == "")
                 {
                     expansion.insert("~");      // for EPSILON use
+                    fullstack.push_front("&");  // "&" is EPSILON for printing parse tree
                 }
             }
             // Finished with no errors

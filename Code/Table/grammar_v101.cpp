@@ -40,36 +40,6 @@ vector<Token> tokens;
 // Token token;
 int token_ptr;
 
-// Auxiliry functions
-void moveup()
-{
-    if (token_ptr < tokens.size())
-    {
-        token_ptr += 1;
-    }
-};
-
-void backdown()
-{
-    if (token_ptr > 0)
-    {
-        token_ptr -= 1;
-    }
-};
-
-// Check if a string is numeric
-bool isNumeric(string &s)
-{
-    for (int i = 0; i < s.size(); i++)
-    {
-        if (!isdigit(s[i]))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 int main()
 {
     // Declare variables for reading file
