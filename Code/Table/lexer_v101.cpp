@@ -68,6 +68,7 @@ struct Token
 	string lexeme;
 	string lexemeName;
 	string productionRules;
+	bool artificial = false;	// set true for fake semicolons ONLY
 };
 
 // Set to hold seperators

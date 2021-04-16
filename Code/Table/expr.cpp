@@ -62,7 +62,8 @@ class Expr
     int curr = 0;                       // current string ptr
     bool assigned = false;              // false if an assignment-statement is needed (before EQUALS sign)
     bool once = true;                   // prevent printing assignment-statement multiple times
-    //string op;                          // specifies operator in the production tokens for ±Te, *Ft, /Ft during printing
+    bool artificial;                    // don't print production details for fake semicolons
+    pair<string,string> prodRules;      // experimental
 
     bool isTerminal(string S) 
     {
@@ -74,7 +75,7 @@ class Expr
     }
     // Expression production rules starting with E -> T E'
     string RULES[5][10] = {
-    //        id      +     -      *         /      (       )       $       ;         =
+    //        id      +     -      *         /       (       )       $       ;        =
             {"Te",  "nil", "nil",  "nil",  "nil",  "Te",   "nil",  "nil",   "",    "skip"},    //     E  ->  T E'                  in the table : e = E'
             {"nil", "+Te", "-Te",  "nil",  "nil",  "nil",   "",    "",      "",    "skip"},    //     E' ->  +- T E' | epsilon     in the table : e = E' , "" = epsilon
             {"Ft",  "nil", "nil",  "nil",  "nil",  "Ft",   "nil",  "nil",   "",    "skip"},    //     T  ->  F T'                  in the table : t = T'
@@ -82,18 +83,18 @@ class Expr
             {"i",   "nil", "nil",  "nil",  "nil",  "(E)",  "nil",  "nil",  "nil",  "skip"}     //     F  ->  ( E )   | id          in the table : i stands for id
     };
 
-    // may get rid of this
+    // experimental
     int newRULES[5][10] = {
     //        id          +          -          *         /             (                   )          $          ;         =
-            {Te,       INVALID,   INVALID,   INVALID,   INVALID,     Te,                 INVALID,   NOTHNG,   EPSILON,   NOTHNG},    // E
-            {INVALID,  PLUSTe,    MINUSTe,   INVALID,   INVALID,     INVALID,            EPSILON,   NOTHNG,   EPSILON,   NOTHNG},    // E’
-            {Ft,       INVALID,   INVALID,   INVALID,   INVALID,     Ft,                 INVALID,   NOTHNG,   EPSILON,   NOTHNG},    // T
-            {INVALID,  EPSILON,   EPSILON,   STARFt,    SLASHFt,     INVALID,            EPSILON,   NOTHNG,   EPSILON,   NOTHNG},    // T’
-            {id,       INVALID,   INVALID,   INVALID,   INVALID,     E_WITH_PARENTHESES, INVALID,   NOTHNG,   EPSILON,   NOTHNG}     // F
+            {Te,       INVALID,   INVALID,   INVALID,   INVALID,     Te,                 INVALID,   INVALID,   EPSILON,   NOTHNG},    // E
+            {INVALID,  PLUSTe,    MINUSTe,   INVALID,   INVALID,     INVALID,            EPSILON,   EPSILON,   EPSILON,   NOTHNG},    // E’
+            {Ft,       INVALID,   INVALID,   INVALID,   INVALID,     Ft,                 INVALID,   INVALID,   EPSILON,   NOTHNG},    // T
+            {INVALID,  EPSILON,   EPSILON,   STARFt,    SLASHFt,     INVALID,            EPSILON,   EPSILON,   EPSILON,   NOTHNG},    // T’
+            {id,       INVALID,   INVALID,   INVALID,   INVALID,     E_WITH_PARENTHESES, INVALID,   INVALID,   EPSILON,   NOTHNG}     // F
     };
 
-    //  retreives the appropriate production rule from RULES to be analyzed and (if applicable) pushed onto the stack
-    string table(string X, string a)
+    //  retrieves the appropriate production rule from RULES to be analyzed and (if applicable) pushed onto the stack
+    string getTable(string X, string a)
     {
         int col, row = -1;
         //  set any alphanumeric token to follow the rules for id
@@ -115,7 +116,7 @@ class Expr
             case ';' : col=8; break;
             case '=' : col=9; break;
             case '#' : col=9; break;
-            default  : cout << "\n[line 118/105/96 expr.cpp] SYNTAX ERROR while looking up table : "+a+" is not a valid token!\n"
+            default  : cout << "\n[line 119/106/97 expr.cpp] SYNTAX ERROR while looking up table : "+a+" is not a valid token!\n"
                              "**Now Exiting...";
                        exit(-1); 
                        break;
@@ -149,6 +150,10 @@ class Expr
                 once = false;
             }
             
+            return "";
+        }
+        if (artificial && str2[curr] == ';')
+        {
             return "";
         }
         //  needs fixing ~ done
@@ -208,7 +213,7 @@ class Expr
         if (tmp!= "") { cout << tmp << endl; }
         return tmp;
     }
-    // gets the lexeme's name while ruling out bad syntax such as duplicate consective operators
+    // gets the lexeme's name while ruling out bad syntax such as duplicate consecutive operators
     string getLex(string tk)
     {
         string tmp, tmp2;
@@ -218,7 +223,7 @@ class Expr
             tmp = (KEYS.find(tk) != KEYS.end() ? "KEYWORD" : "IDENTIFIER");
             if (prev == tmp)
             {
-                cout << "\n[line 219/216 expr.cpp] CRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
+                cout << "\n[line 224/217 expr.cpp] CRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
             }
             prev = tmp;
             tmp2 = tk;
@@ -230,7 +235,7 @@ class Expr
             tmp = "INTEGER";
             if (prev == tmp)
             {
-                cout << "\n[line 231/228 expr.cpp] CRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
+                cout << "\n[line 236/217 expr.cpp] CRITICAL SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
             }
             prev = tmp;
             tmp2 = tk;
@@ -242,7 +247,7 @@ class Expr
             tmp = "OPERATOR";
             if (prev == tmp)
             {
-                cout << "\n** [line 242/240 expr.cpp] SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
+                cout << "\n** [line 248/217 expr.cpp] SYNTAX ERROR : Consecutive " << tmp << " tokens found in the sentence!\n** Now Exiting..."; exit(1);
             }
             prev = tmp;
             tmp2 = tk;
@@ -254,27 +259,27 @@ class Expr
             tmp = "SEPARATOR";
             if (tk == ";" && prev == "OPERATOR")
             {
-                cout << "\n** [line 255/252 expr.cpp] SYNTAX ERROR : " << tmp << " right before " << tk << " token!\n** Now Exiting..."; exit(1);
+                cout << "\n** [line 260/217 expr.cpp] SYNTAX ERROR : " << tmp << " right before " << tk << " token!\n** Now Exiting..."; exit(1);
                 exit(1);
             }
             if (tk == tmp2)
             {
                 if (tk != "(" && tk != ")")
                 {
-                    cout << "\n** [line 262/260/252 expr.cpp] SYNTAX ERROR : consecutive " << tk << " tokens in the same sentence!\n** Now Exiting..."; exit(1);
+                    cout << "\n** [line 267/217 expr.cpp] SYNTAX ERROR : consecutive " << tk << " tokens in the same sentence!\n** Now Exiting..."; exit(1);
                 }
                 cout << "\nWarning : consecutive " << tk << " tokens encountered\n";
             }
             else if (tmp2 == "(" && tk == ")")
             {
-                cout << "\n** [line 268/252 expr.cpp] SYNTAX ERROR : Empty parenthetical enclosure\n** Now Exiting..."; exit(1);
+                cout << "\n** [line 273/217 expr.cpp] SYNTAX ERROR : Empty parenthetical enclosure\n** Now Exiting..."; exit(1);
             }
             prev = tmp;
             tmp2 = tk;
-            return "SEPARATOR";
+            return (artificial ? "NOTHING (FAKE SEMICOLON)" : "SEPARATOR");
         }
         //  crashes if a token that does not belong to any of the above groups made it to this point
-        cout << "\n** [line 212/275 expr.cpp] SYNTAX ERROR : Illegal or mismatched token present in the sentence!\n** Now Exiting..."; exit(1);
+        cout << "\n** [line 282/217 expr.cpp] SYNTAX ERROR : Illegal or mismatched token present in the sentence!\n** Now Exiting..."; exit(1);
         return NULL;
     }
 
@@ -312,7 +317,7 @@ class Expr
                 {
                     if (curr != index)      //  logic check for bad syntax
                     {
-                        cout << "[line 313/289 expr.cpp] Bad Syntax Error : multiple instances of the lexeme { " << a << " } were found in the current sentence\n** Now Exiting..."; exit(-1);
+                        cout << "[line 318/286 expr.cpp] Bad Syntax Error : multiple instances of the lexeme { " << a << " } were found in the current sentence\n** Now Exiting..."; exit(-1);
                     }
                 }
                 //  don't assign after EQUALS sign
@@ -369,7 +374,7 @@ class Expr
                         once = true;
                         return true;
                     }
-                    cout << "\n** [line 347/343/323 expr.cpp] SYNTAX ERROR: interpreted value = false\nreason : bad token " 
+                    cout << "\n** [line 352/331/286 expr.cpp] SYNTAX ERROR: interpreted value = false\nreason : bad token " 
                          << a << " is not compatible with stack top " << X << "\n** Now Exiting...";
                     exit(1);
                     return false;
@@ -379,10 +384,10 @@ class Expr
             {
             //  All Non-Terminal Production Elements are processed here {E, T, e, t, F} 
                 //  lookup the RULES table for shorthand production rule corresponding to current stack pointer and lexeme
-                string prod = table(X,a);
+                string prod = getTable(X,a);
 
                 //  Special rules for EQUALS sign
-                //  Empty the stack (stk) and unordered set (expansion), and restore stack with default contents
+                //  Empty both stacks and unordered set (expansion), and restore stacks with default contents
                 //  Statement assignment won't be used in expression parsing
                 //  Increment token pointer
                 if (prod == "skip")
@@ -411,7 +416,7 @@ class Expr
                 //  Breakpoint for bad syntax: rule mismatch
                 if (prod == "nil") 
                 {
-                    cout << "\n** [line 412/382 expr.cpp] SYNTAX ERROR - interpreted value = false\nreason : token "
+                    cout << "\n** [line 417/387/97/286 expr.cpp] SYNTAX ERROR - interpreted value = false\nreason : token "
                          << a << " has broken a nil production rule\n** Now Exiting...";
                     exit(-1);
                     return false;
@@ -438,8 +443,11 @@ class Expr
                 }
             }
             // Finished with no errors
-            if (X == "$" || X == ";") {
-                    cout << boolalpha << "interpreted value = true\n";return true;}
+            if (X == "$") 
+            {
+                cout << "Finished with no errors\n";
+                return true;
+            }
         }
     }
     //  Process contents of expansion (unordered set) so the Production Rules can be printed
@@ -452,6 +460,11 @@ class Expr
         }
         expanded = tmp;
         return tmp;
+    }
+    // Just a basic call to reduce confusion with lexer's own artificial construct
+    void setArtificial (bool b)
+    {
+        artificial = b;
     }
 };
 

@@ -52,10 +52,12 @@ int main()
     moneySign.lexemeNum = 4;
     moneySign.lexeme = "$";
     moneySign.lexemeName = "SEPERATOR";
+    // Fake semicolon
     Token semicolon;
     semicolon.lexemeNum = 3;
     semicolon.lexeme = ";";
     semicolon.lexemeName = "SEPERATOR";
+    semicolon.artificial = true;
 
     // Read the file
     cout << "\nPlease enter the name of the file: ";
@@ -100,16 +102,21 @@ int main()
 
     for (Token tk : tokens)
     {
-        
         tempstring = tk.lexeme;
         expr.str2 += tempstring;
         prev = tk.lexeme;
         if (tk.lexeme == ";")
         {
+            if (tk.artificial)
+            {
+                expr.setArtificial(true);
+            }
             expr.interpret();
             expr.str2 = "";
+            expr.setArtificial(false);
         }
         expr.prev = tempstring;
+
     }
     duration = ( clock() - t ) / (double) CLOCKS_PER_SEC;
     cout << "\nParsing concluded successfully in " << duration << " seconds! \n\n";
